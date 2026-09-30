@@ -1,0 +1,58 @@
+# Conda environment for DrugCLIP.
+#
+#   conda env create -f environment.yml
+#   conda activate drugclip
+#
+# Then install Uni-Core separately - it is not on PyPI or conda and must be
+# built from source. See SETUP.md.
+#
+# Notes on the pins:
+#
+# * python 3.10  - Uni-Core publishes builds only for 3.8 / 3.9 / 3.10.
+#                  Debian 13 and Ubuntu 24.04 ship 3.12, which is too new.
+#
+# * rdkit        - pinned by the upstream README. Conformer generation
+#                  changed between RDKit versions, so a different version
+#                  produces different 3D coordinates and therefore
+#                  different screening scores.
+#
+# * nodefaults   - keeps conda off Anaconda's repo.anaconda.com channels,
+#                  which carry Terms of Service and commercial licensing
+#                  conditions. Everything here comes from conda-forge,
+#                  which is community-run and unrestricted.
+#
+# * pytorch-cpu  - CPU build. That is enough for screening: molecules are
+#                  encoded once and cached, then ranked by a cosine
+#                  similarity that is a plain matrix multiply.
+#                  For training, swap pytorch-cpu -> pytorch + pytorch-gpu.
+
+name: drugclip
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python=3.10
+
+  # Core numerics
+  - pytorch-cpu=2.*
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+
+  # Cheminformatics
+  - rdkit=2022.09.5
+  - biopandas
+  - biopython
+
+  # Data format
+  - python-lmdb
+  - pyarrow
+
+  # Misc
+  - networkx
+  - tqdm
+  - ipython
+  - pip

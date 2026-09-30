@@ -1,1 +1,31 @@
 **/__pycache__/
+*.py[cod]
+
+# Model weights and embedding caches - large, and not ours to redistribute
+*.pt
+*.pkl
+data/emb/
+savedir/
+tmp_save_dir/
+tsb_dir/
+
+# Data
+*.lmdb
+*.lmdb-lock
+data/*.lmdb
+
+# Screening output
+ranked_compounds.txt
+test/
+
+# Environments (never commit an env directory)
+env/
+venv/
+.venv/
+miniconda3/
+miniforge3/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
