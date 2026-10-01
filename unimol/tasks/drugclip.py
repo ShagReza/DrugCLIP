@@ -31,6 +31,22 @@ from sklearn.metrics import roc_curve
 logger = logging.getLogger(__name__)
 
 
+def move_to_device(sample, model):
+    """Move a batch to whatever device the model is on.
+
+    The encoding loops below called unicore.utils.move_to_cuda() unconditionally,
+    so CPU-only inference crashed. Keying off the model's own device (rather than
+    torch.cuda.is_available()) also keeps --cpu working on a machine that *has* a
+    GPU - there the model stays on CPU, and moving the batch to CUDA would raise a
+    device-mismatch error.
+    """
+    device = next(model.parameters()).device
+    if device.type == "cuda":
+        return unicore.utils.move_to_cuda(sample)
+    return sample
+
+
+
 def re_new(y_true, y_score, ratio):
     fp = 0
     tp = 0
@@ -633,7 +649,7 @@ class DrugCLIP(UnicoreTask):
         
         mol_data = torch.utils.data.DataLoader(mol_dataset, batch_size=bsz, collate_fn=mol_dataset.collater)
         for _, sample in enumerate(tqdm(mol_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["mol_src_distance"]
             et = sample["net_input"]["mol_src_edge_type"]
             st = sample["net_input"]["mol_src_tokens"]
@@ -666,7 +682,7 @@ class DrugCLIP(UnicoreTask):
         pocket_reps = []
 
         for _, sample in enumerate(tqdm(pocket_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["pocket_src_distance"]
             et = sample["net_input"]["pocket_src_edge_type"]
             st = sample["net_input"]["pocket_src_tokens"]
@@ -772,7 +788,7 @@ class DrugCLIP(UnicoreTask):
         
         mol_data = torch.utils.data.DataLoader(mol_dataset, batch_size=bsz, collate_fn=mol_dataset.collater)
         for _, sample in enumerate(tqdm(mol_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["mol_src_distance"]
             et = sample["net_input"]["mol_src_edge_type"]
             st = sample["net_input"]["mol_src_tokens"]
@@ -806,7 +822,7 @@ class DrugCLIP(UnicoreTask):
         pocket_reps = []
 
         for _, sample in enumerate(tqdm(pocket_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["pocket_src_distance"]
             et = sample["net_input"]["pocket_src_edge_type"]
             st = sample["net_input"]["pocket_src_tokens"]
@@ -910,7 +926,7 @@ class DrugCLIP(UnicoreTask):
         bsz=32
         mol_data = torch.utils.data.DataLoader(mol_dataset, batch_size=bsz, collate_fn=mol_dataset.collater)
         for _, sample in enumerate(tqdm(mol_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["mol_src_distance"]
             et = sample["net_input"]["mol_src_edge_type"]
             st = sample["net_input"]["mol_src_tokens"]
@@ -951,7 +967,7 @@ class DrugCLIP(UnicoreTask):
         pocket_reps = []
         pocket_names = []
         for _, sample in enumerate(tqdm(pocket_data)):
-            sample = unicore.utils.move_to_cuda(sample)
+            sample = move_to_device(sample, model)
             dist = sample["net_input"]["pocket_src_distance"]
             et = sample["net_input"]["pocket_src_edge_type"]
             st = sample["net_input"]["pocket_src_tokens"]

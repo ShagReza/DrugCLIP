@@ -71,7 +71,9 @@ class BindingAffinityModel(BaseUnicoreModel):
             args.mol.encoder_embed_dim, 128, "relu"
         )
 
-        self.logit_scale = nn.Parameter(torch.ones([1], device="cuda") * np.log(14))
+        # Created on CPU and moved by model.cuda()/.to(); hardcoding device="cuda"
+        # here made the model unconstructible on a CPU-only machine.
+        self.logit_scale = nn.Parameter(torch.ones([1]) * np.log(14))
         
 
         

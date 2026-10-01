@@ -1,0 +1,11 @@
+name,smiles
+aspirin,CC(=O)Oc1ccccc1C(=O)O
+caffeine,Cn1cnc2c1c(=O)n(C)c(=O)n2C
+ibuprofen,CC(C)Cc1ccc(cc1)C(C)C(=O)O
+paracetamol,CC(=O)Nc1ccc(O)cc1
+nicotine,CN1CCC[C@H]1c1cccnc1
+atenolol,CC(C)NCC(O)COc1ccc(CC(N)=O)cc1
+metformin,CN(C)C(=N)NC(=N)N
+warfarin,CC(=O)CC(c1ccccc1)c1c(O)c2ccccc2oc1=O
+diazepam,CN1c2ccc(Cl)cc2C(=Nc3ccccc3)Cc1=O
+naproxen,COc1ccc2cc(ccc2c1)[C@H](C)C(=O)O

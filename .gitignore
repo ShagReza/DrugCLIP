@@ -29,3 +29,17 @@ miniforge3/
 .DS_Store
 .idea/
 .vscode/
+
+# Model weights (download separately - see SETUP.md)
+model/
+
+# Working data: structures, generated LMDBs, results.
+# The sample molecule list is kept so the usage notebook runs out of the box.
+data/pgk2/*
+!data/pgk2/sample_molecules.csv
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Executed notebook artifacts (outputs create diff noise)
+usage/*_executed.ipynb
