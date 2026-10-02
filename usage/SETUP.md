@@ -282,3 +282,77 @@ Beyond the disk-lock bug in section 0:
 
 - A distro shuts itself down after a period of inactivity and restarts on
   demand. No manual start is needed.
+
+## Running a screen
+
+Two notebooks in this folder, both validated on CPU.
+
+### `run_screen.ipynb` — from an experimental structure
+
+For a target that has a holo PDB entry (a structure with a ligand bound).
+Downloads the structure, extracts the pocket around a chosen ligand, builds
+conformers from a SMILES CSV, and ranks.
+
+### `run_screen_alphafold.ipynb` — from a predicted structure
+
+For a target with no experimental structure. Human PGK2 (P07205) is the worked
+example — it has no PDB entry.
+
+A predicted model has no ligand, so there is nothing to define a pocket around.
+Rather than detecting one with Fpocket, this borrows one: TM-align superposes a
+solved relative onto the model, and the same transform moves that relative's
+ligand into the model's coordinate frame. The result is a pseudo-holo complex
+that `pocket_from_pdb.py` consumes unchanged.
+
+This follows the screen-pipeline README's own advice — align to an experimental
+ligand rather than using Fpocket, which it says yields usable pockets only about
+half the time. On the paper's benchmarks the aligned route reaches EF1% ~24 on
+AlphaFold2 structures, against 19.0 for Fpocket.
+
+`transplant.py` holds the alignment helper. It drives `HomoAug/bin/TMalign`,
+already shipped with this repo.
+
+Worked example, human PGK2 against mouse Pgk2 (2PAA):
+
+| Check | Value |
+| --- | --- |
+| plDDT (model confidence) | median 97.8, 95% above 90 |
+| TM-score | 0.9825 |
+| Closest ligand–protein contact | 2.73 A |
+| Pocket size vs experimental | 199 vs 215 atoms |
+
+### Things that bite
+
+- **The embedding cache is keyed on filename, not contents.** Change the
+  molecule library without clearing `emb/` and you will silently score the
+  previous molecules, with a perfectly plausible-looking result.
+
+- **`pocket_from_pdb.py` swallows every error** in a bare `except: pass`. A
+  structure that fails to parse yields an empty LMDB and no message. Both
+  notebooks assert the pocket is non-empty.
+
+- **A transplant can fail silently.** Apply the transform backwards and the
+  ligand lands outside the protein; the file is still valid and a meaningless
+  pocket is still extracted around whatever happens to be nearby. The notebook
+  checks TM-score, contact distance and burial before trusting it.
+
+- **The bundled binaries may lack the execute bit** after cloning. Run
+  `chmod +x HomoAug/bin/*`.
+
+### Scores are relative
+
+The output is a cosine similarity, meaningful only against a background. A
+ranking of a handful of molecules tells you their order, not whether any of them
+binds. For a real campaign, spike the compounds of interest into 10k–100k
+background molecules and use the z-score — the screen-pipeline README suggests
+above 3, the Science paper used above 4 together with a Glide score below −6.
+
+## Pushing to a fork
+
+`gh auth login` defaults to the SSH protocol. If the remote is HTTPS, git still
+has no credential helper afterwards and the push fails with no useful message.
+Run:
+
+```bash
+gh auth setup-git
+```

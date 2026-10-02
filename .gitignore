@@ -30,7 +30,7 @@ miniforge3/
 .idea/
 .vscode/
 
-# Model weights (download separately - see SETUP.md)
+# Model weights (download separately - see usage/SETUP.md)
 model/
 
 # Working data: structures, generated LMDBs, results.
@@ -43,3 +43,6 @@ data/pgk2/*
 
 # Executed notebook artifacts (outputs create diff noise)
 usage/*_executed.ipynb
+
+# AlphaFold working data: downloaded structures, alignment intermediates
+data/pgk2_af/
