@@ -49,3 +49,6 @@ data/pgk2_af/
 
 # Fpocket working data
 data/pgk2_fpocket/
+
+# Screening outputs
+data/results/
