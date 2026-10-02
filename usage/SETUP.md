@@ -100,37 +100,17 @@ To work on both repos at once, use a multi-root workspace:
 That shows them side by side and lets search span both; it does not merge
 them - they stay separate git repositories with their own remotes.
 
-### Claude Code inside the distro (optional)
+### A note on PATH interop
 
-If you use Claude Code, it has to be installed **inside** Debian. A Windows
-install will not serve the VS Code WSL remote.
-
-Beware: `claude --version` may appear to work already. WSL's PATH interop
-reaches Windows executables under `/mnt/c`, so you can be running the Windows
-binary without realising it. Check which one you actually have:
-
-```bash
-command -v claude      # /mnt/c/... means it is the Windows install
-```
-
-Install natively:
+WSL inherits the Windows `PATH`, so tools installed on Windows are reachable
+from inside Linux via `/mnt/c/...`. That means a command can appear to be
+installed when it is not actually present on the Linux side, which breaks
+anything that needs a genuine Linux binary - including VS Code remote
+extensions. Check with:
 
 ```bash
-curl -fsSL https://claude.ai/install.sh | bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-command -v claude      # expect ~/.local/bin/claude
+command -v <tool>      # a /mnt/c/... path means it is the Windows install
 ```
-
-Then in VS Code:
-
-1. Extensions panel -> Claude Code -> **Install in WSL: Debian**
-2. `Ctrl+Shift+P` -> **Developer: Reload Window**
-3. Run `claude` once in the WSL terminal to authenticate - the Linux install
-   has its own credentials, separate from any Windows one.
-
-The same interop trap applies to other tools. If something "works" in the WSL
-terminal, run `command -v` to confirm it is really Linux-side.
 
 ### Clone the repos
 
