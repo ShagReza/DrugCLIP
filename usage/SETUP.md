@@ -332,6 +332,105 @@ the qhull conflict above.
 
 Point `FPOCKET` in the notebook's config cell at `~/fpocket/bin/fpocket`.
 
+
+## Running on a GPU
+
+The encoding step is what a GPU accelerates, and the ensemble notebooks repeat
+it once per fold, so this is where the time goes on a large library.
+
+**Conformer generation gets no benefit.** That is RDKit on CPU - roughly 0.16 s
+per molecule, about 20 hours for 460,000 single-threaded, on any hardware. It
+parallelises across cores, which is the lever that matters there.
+
+Tested on Azure ML Compute Instances, which are Ubuntu; a plain Azure or GCP
+GPU VM works the same way. Databricks also works but fights this workload: its
+clusters are ephemeral, so Uni-Core and fpocket get rebuilt on every start
+unless baked into a custom container.
+
+### 1. Environment
+
+```bash
+git clone https://github.com/ShagReza/DrugCLIP.git
+cd DrugCLIP
+conda env create -f environment-gpu.yml      # not environment.yml
+conda activate drugclip-gpu
+```
+
+The only difference is a CUDA build of PyTorch. RDKit stays pinned to the same
+version so scores remain comparable with CPU runs.
+
+Confirm the GPU is visible before going further:
+
+```bash
+nvidia-smi
+python -c "import torch; print(torch.cuda.is_available(), torch.version.cuda)"
+```
+
+### 2. Uni-Core, with CUDA kernels
+
+The CPU instructions rely on CUDA extensions being skipped by default. Here you
+want them, which means opting in:
+
+```bash
+git clone https://github.com/dptech-corp/Uni-Core.git ~/Uni-Core
+cd ~/Uni-Core
+python setup.py install --enable-cuda-ext
+```
+
+`pip install .` has no clean way to pass that flag, since `setup.py` reads it
+from `sys.argv` directly, so use `setup.py install` here.
+
+The CUDA version in the build environment must match the one PyTorch was built
+against, or the extensions compile but fail at import. Check with:
+
+```bash
+nvcc --version
+python -c "import torch; print(torch.version.cuda)"
+```
+
+A successful build is visible at import time by what is *absent* - the
+`fused_layer_norm is not installed` messages seen on CPU should no longer
+appear.
+
+### 3. Other binaries
+
+```bash
+chmod +x HomoAug/bin/*            # git does not always preserve the bit
+```
+
+Rebuild fpocket if using those notebooks - see the Fpocket section above; the
+qhull and gcc caveats apply equally.
+
+### 4. Notebook settings
+
+The notebooks already detect the GPU and omit `--cpu` when one is present, so
+they run unchanged. Three settings are worth raising for throughput, in the
+screening cell of each:
+
+| setting | CPU default | on GPU |
+| --- | --- | --- |
+| `--fp16` | not passed | add it, with `--fp16-init-scale 4 --fp16-scale-window 256` |
+| `--batch-size` | 8 | 128-256 |
+| `--num-workers` | 0 | 4-8 |
+
+`--fp16` is deliberately absent on CPU because half precision is a GPU path.
+
+Paths in the config cells assume `/root/GitRepos/DrugCLIP`; adjust `REPO` and
+`PIPELINE` to wherever the repos were cloned.
+
+### What to expect
+
+For 460,000 molecules with the 6-fold ensemble:
+
+| | CPU (12 cores) | GPU |
+| --- | --- | --- |
+| conformer generation, once | ~20 h single-threaded, ~2-3 h parallelised | the same - CPU bound |
+| encoding, six folds | 10-48 h | well under an hour |
+
+So a GPU removes the encoding bottleneck and leaves conformer generation as the
+limit. Build `mols.lmdb` once and point every notebook at it rather than
+regenerating it per notebook.
+
 ## Running a screen
 
 Two notebooks in this folder, both validated on CPU.

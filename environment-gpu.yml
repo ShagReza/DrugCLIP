@@ -1,0 +1,55 @@
+# Conda environment for DrugCLIP on a CUDA machine.
+#
+#   conda env create -f environment-gpu.yml
+#   conda activate drugclip-gpu
+#
+# This differs from environment.yml in one respect: a CUDA build of PyTorch
+# instead of the CPU one. Everything else is identical, so results do not
+# change - only the speed of encoding.
+#
+# Uni-Core must then be built WITH its CUDA kernels, which the CPU
+# instructions deliberately skip. See usage/SETUP.md.
+#
+# Check what the driver supports before choosing a CUDA version:
+#
+#   nvidia-smi        # the "CUDA Version" shown is the maximum the driver takes
+#
+# The pin below suits CUDA 12.x drivers. For an older driver, pin
+# pytorch-gpu to a build matching its CUDA.
+
+name: drugclip-gpu
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python=3.10
+
+  # CUDA build. conda-forge resolves the matching cudatoolkit automatically.
+  - pytorch-gpu=2.*
+
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+
+  # Pinned by the upstream README. Conformer generation changed between RDKit
+  # versions, so a different version yields different coordinates and therefore
+  # different scores - keep it the same as the CPU environment so runs on the
+  # two machines stay comparable.
+  - rdkit=2022.09.5
+  - biopandas
+  - biopython
+
+  - python-lmdb
+  - pyarrow
+
+  - networkx
+  - tqdm
+  - ipython
+  - jupyter
+  - ipykernel
+  - nbformat
+
+  - pip

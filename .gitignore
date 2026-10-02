@@ -52,3 +52,6 @@ data/pgk2_fpocket/
 
 # Screening outputs
 data/results/
+
+# Large user test sets
+data/*.csv
