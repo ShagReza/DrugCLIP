@@ -55,3 +55,6 @@ data/results/
 
 # Large user test sets
 data/*.csv
+
+# Shared molecule libraries built by build_molecules.ipynb
+data/lmdb/
