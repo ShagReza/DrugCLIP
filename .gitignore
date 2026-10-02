@@ -46,3 +46,6 @@ usage/*_executed.ipynb
 
 # AlphaFold working data: downloaded structures, alignment intermediates
 data/pgk2_af/
+
+# Fpocket working data
+data/pgk2_fpocket/

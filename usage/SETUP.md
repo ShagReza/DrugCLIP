@@ -263,6 +263,75 @@ Beyond the disk-lock bug in section 0:
 - A distro shuts itself down after a period of inactivity and restarts on
   demand. No manual start is needed.
 
+
+## Optional: Fpocket
+
+Only needed for `run_screen_fpocket.ipynb` — the route for a target with no
+relative carrying a bound ligand. Skip it otherwise.
+
+Fpocket is not in Debian's repositories, so it has to be built from source. Two
+things trip it up on Debian 13.
+
+### Do not install libqhull-dev
+
+Fpocket bundles its own copy of qhull, the geometry library it uses to find
+cavities. If the system `libqhull-dev` is present, fpocket links against that
+instead, and the two expect different option syntax. It builds cleanly and then
+dies at runtime:
+
+```
+QH6047 qhull input error: use upper-Delaunay('Qu') or infinity-point('Qz')
+with Delaunay('d') or Voronoi('v')
+While executing: rbox D3 | qvoronoi p i Pp Qz Qt
+```
+
+Note it reports zero pockets rather than failing outright, so this is easy to
+misread as "the protein has no cavities". If it is already installed:
+
+```bash
+apt-get remove -y libqhull-dev
+```
+
+then rebuild from clean.
+
+### gcc 14 rejects fpocket's C
+
+Debian 13 ships gcc 14, which promotes incompatible pointer types from warning
+to error. Fpocket's source predates that:
+
+```
+src/fparams.c:296:24: error: passing argument 1 of 'strcpy' from
+incompatible pointer type [-Wincompatible-pointer-types]
+make: *** [makefile:148: obj/fparams.o] Error 1
+```
+
+Relax those three checks in the makefile. Edit `CFLAGS` rather than passing
+`CFLAGS=` on the command line — overriding it drops the include paths the build
+needs, and `make` then exits 0 having built only the bundled qhull, leaving
+`bin/` empty.
+
+### Build
+
+```bash
+git clone https://github.com/Discngine/fpocket.git ~/fpocket
+cd ~/fpocket
+sed -i 's|^CFLAGS      = |CFLAGS      = -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-implicit-function-declaration |' makefile
+make -j4
+ls bin/fpocket          # should exist
+```
+
+Verify it actually finds cavities, not just that it exits 0:
+
+```bash
+cd /tmp && fpocket -f some_model.pdb
+ls some_model_out/pockets/*.pqr | wc -l     # expect tens, not zero
+```
+
+On the human PGK2 AlphaFold model this gives 32 cavities. A count of zero means
+the qhull conflict above.
+
+Point `FPOCKET` in the notebook's config cell at `~/fpocket/bin/fpocket`.
+
 ## Running a screen
 
 Two notebooks in this folder, both validated on CPU.
