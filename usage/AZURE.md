@@ -5,17 +5,38 @@ itself and what each notebook does, see [SETUP.md](SETUP.md).
 
 ## 1. Compute instance
 
-Pick by **core count** - everything here is CPU-parallel. Without GPU quota,
-`Standard_D48a_v4` (48 cores) is a reasonable choice; the per-core price
-matches the 32-core sizes, so the larger one finishes sooner for the same
-money.
+The work splits in two, and they want different things:
 
-Under *Security*, leave SSH off (the VS Code Desktop button uses its own
-tunnel) and keep root access on. Under *Scheduling*, set idle shutdown to
-60 minutes - it only fires when the instance is genuinely idle, so a running
-job is safe.
+| step | bound by | helped by a GPU |
+| --- | --- | --- |
+| conformer generation, once per compound set | CPU, parallel across cores | no - this is RDKit |
+| encoding, once per checkpoint | the model | yes, substantially |
 
-Open it with the **VS Code Desktop** button and authenticate normally.
+So **cores matter whatever you pick**, and a GPU helps only the second half.
+
+**With GPU quota.** An NC-series instance. DrugCLIP's encoder is small - a
+15-layer transformer at 512 dimensions - so a T4 is ample and an A100 would sit
+mostly idle. Choose on vCPU count rather than GPU grade: `NC16as_T4_v3`
+(16 vCPU) over `NC4as_T4_v3` (4 vCPU), because those four cores would make
+conformer generation the bottleneck by a wide margin.
+
+**Without GPU quota.** The whole job runs on CPU, so take the highest core
+count available to you - F-series (compute optimised) if offered, otherwise
+D-series. Per-core pricing is usually flat within a family, which means a
+larger instance costs about the same per unit of work and finishes sooner.
+
+GPU quota often starts at zero on a new subscription and takes a day or two to
+be granted. Check *Quotas* in the studio before planning around one; if the
+N-series sizes are absent from the GPU tab entirely, that is quota or region
+rather than anything you have selected wrongly.
+
+**Settings.** Under *Security*, SSH can stay off - the VS Code Desktop button
+uses its own tunnel - and root access is worth keeping for `apt-get`. Under
+*Scheduling*, idle shutdown at 60 minutes is a reasonable default: it only
+fires when the instance is genuinely idle, so a running job is safe, and the
+timer starts after the work stops.
+
+Open the instance with the **VS Code Desktop** button and authenticate normally.
 
 ## 2. Clone
 
