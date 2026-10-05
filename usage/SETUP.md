@@ -13,6 +13,7 @@ Upstream ships no dependency manifest ("Requirements: same as Uni-Mol"), so
 - [Uni-Core](#uni-core)
 - [Model weights](#model-weights)
 - [Running a screen](#running-a-screen)
+- [Azure ML](AZURE.md) - running on a cloud instance
 - [GPU](#gpu)
 - [Fpocket (optional)](#fpocket-optional)
 - [Known traps](#known-traps)
