@@ -58,3 +58,6 @@ data/*.csv
 
 # Shared molecule libraries built by build_molecules.ipynb
 data/lmdb/
+
+# Progress log from build_molecules.ipynb
+build_progress.log

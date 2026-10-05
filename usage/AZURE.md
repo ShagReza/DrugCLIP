@@ -156,6 +156,14 @@ per-fold embedding caches that the other ensembles then reuse.
 
 ### Watching it
 
+`nbconvert` buffers a cell's output until the cell finishes, so a long build
+shows nothing in its log while it runs. `build_molecules.ipynb` writes its
+progress bar to `build_progress.log` separately for that reason:
+
+```bash
+tail -1 build_progress.log      # percentage, rate and ETA
+```
+
 ```bash
 pgrep -f nbconvert > /dev/null && echo RUNNING || echo "finished or died"
 tail -f build.log                     # live
