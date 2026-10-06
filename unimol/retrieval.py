@@ -59,7 +59,11 @@ def main(args):
 
     model.eval()
     
-    names, scores = task.retrieve_mols(model, args.mol_path, args.pocket_path, args.emb_dir, 10000)
+    # 0 means every molecule. A fixed cap silently discards the rest, which
+    # breaks ensembling: mean-pooling across folds requires each fold to have
+    # scored the same molecules.
+    topk = args.topk if args.topk > 0 else None
+    names, scores = task.retrieve_mols(model, args.mol_path, args.pocket_path, args.emb_dir, topk)
 
     # save to ranked_compounds.txt
     with open(os.path.join(args.emb_dir, 'ranked_compounds.txt'), 'w') as f:
@@ -75,6 +79,8 @@ def cli_main():
     parser.add_argument("--mol-path", type=str, default="", help="path for mol data")
     parser.add_argument("--pocket-path", type=str, default="", help="path for pocket data")
     parser.add_argument("--emb-dir", type=str, default="", help="path for saved embedding data")
+    parser.add_argument("--topk", type=int, default=0,
+                        help="how many ranked compounds to write; 0 (default) writes all")
     options.add_model_args(parser)
     args = options.parse_args_and_arch(parser)
 
