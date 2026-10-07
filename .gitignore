@@ -58,3 +58,6 @@ data/*.csv
 
 # Shared molecule libraries built by build_molecules.ipynb
 data/lmdb/
+
+# Scratch transfers between machines
+temp/
