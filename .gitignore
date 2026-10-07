@@ -61,3 +61,6 @@ data/lmdb/
 
 # Scratch transfers between machines
 temp/
+
+# Progress log from build_molecules.ipynb
+build_progress.log

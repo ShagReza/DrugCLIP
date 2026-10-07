@@ -13,6 +13,7 @@ Upstream ships no dependency manifest ("Requirements: same as Uni-Mol"), so
 - [Uni-Core](#uni-core)
 - [Model weights](#model-weights)
 - [Running a screen](#running-a-screen)
+- [Azure ML](AZURE.md) - running on a cloud instance
 - [GPU](#gpu)
 - [Fpocket (optional)](#fpocket-optional)
 - [Known traps](#known-traps)
@@ -281,7 +282,7 @@ paths, and `make` then exits 0 having built only the bundled qhull, leaving
 git clone https://github.com/Discngine/fpocket.git ~/fpocket
 cd ~/fpocket
 sed -i 's|^CFLAGS      = |CFLAGS      = -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-implicit-function-declaration |' makefile
-make -j4
+make            # serially: -j races, the makefile's dependencies are incomplete
 ls bin/fpocket
 ```
 

@@ -997,7 +997,10 @@ class DrugCLIP(UnicoreTask):
         # get top k results
 
         
-        top_k = np.argsort(res)[::-1][:k]
+        # k=None keeps every molecule; a cap would discard scores the caller
+        # may need, and ensembling needs them all.
+        order = np.argsort(res)[::-1]
+        top_k = order if k is None else order[:k]
 
         # return names and scores
         
